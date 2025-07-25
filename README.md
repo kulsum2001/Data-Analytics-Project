@@ -71,6 +71,6 @@ Implement deep learning models like LSTM for better performance.
 Author:
 Sakina Kulsum
 📧 sakinakulsum82@gmail.com
-🔗 GitHub Profile]
+🔗 https://github.com/kulsum2001
 
 
