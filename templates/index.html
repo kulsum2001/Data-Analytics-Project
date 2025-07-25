@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amazon Alexa Sentiment Analysis</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Alexa Sentiment Analysis</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#about">About</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="hero-section text-center text-white">
+        <div class="container-fluid">
+            <h1 class="display-4">Classify Online Text Reviews</h1>
+            <p class="lead">Analyze customer reviews with a click of a button!</p>
+            <form method="POST" action="{{ url_for('analyze') }}">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="fas fa-play"></i> Run Analysis
+                </button>
+            </form>
+        </div>
+    </div>
+
+    {% if results %}
+    <div id="results" class="container-fluid my-5">
+        <div class="row mb-5">
+            <div class="col-md-12">
+                <h2 class="text-center">Analysis Summary</h2>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Reviews</h5>
+                        <p class="card-text display-6">{{ results.summary.num_reviews }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title">Positive Reviews</h5>
+                        <p class="card-text display-6">{{ results.summary.num_positive }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title">Negative Reviews</h5>
+                        <p class="card-text display-6">{{ results.summary.num_negative }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-5">
+            <div class="col-md-12">
+                <h2 class="text-center">Feedback Distribution</h2>
+                <img src="{{ url_for('static', filename='images/feedback_distribution.png') }}" class="img-fluid" alt="Feedback Distribution">
+            </div>
+        </div>
+
+        <div class="row mb-5">
+            <div class="col-md-12">
+                <h2 class="text-center">Rating Distribution</h2>
+                <img src="{{ url_for('static', filename='images/rating_distribution.png') }}" class="img-fluid" alt="Rating Distribution">
+            </div>
+        </div>
+
+        <div class="row mb-5">
+            <div class="col-md-12">
+                <h2 class="text-center">Feedback Distribution by Product Variation</h2>
+                <img src="{{ url_for('static', filename='images/feedback_by_variation.png') }}" class="img-fluid" alt="Feedback by Variation">
+            </div>
+        </div>
+
+        <div class="row mb-5">
+            <div class="col-md-12">
+                <h2 class="text-center">Rating Distribution by Feedback</h2>
+                <img src="{{ url_for('static', filename='images/rating_vs_feedback.png') }}" class="img-fluid" alt="Rating vs Feedback">
+            </div>
+        </div>
+
+        <div class="row mb-5">
+            <div class="col-md-12 text-center">
+                <p><strong>Final Training Accuracy:</strong> {{ (results.summary.train_accuracy * 100)|round(2) }}%</p>
+                <p><strong>Final Validation Accuracy:</strong> {{ (results.summary.val_accuracy * 100)|round(2) }}%</p>
+            </div>
+        </div>
+
+        <div class="row mb-5">
+            <div class="col-md-6">
+                <h3 class="text-center">Confusion Matrix - Training Set</h3>
+                <img src="{{ url_for('static', filename='images/cm_train.png') }}" class="img-fluid" alt="Confusion Matrix Training">
+            </div>
+            <div class="col-md-6">
+                <h3 class="text-center">Confusion Matrix - Test Set</h3>
+                <img src="{{ url_for('static', filename='images/cm_test.png') }}" class="img-fluid" alt="Confusion Matrix Test">
+            </div>
+        </div>
+
+       
+
+        <div class="row mb-5">
+            <div class="col-md-12">
+                <h3 class="text-center">Sample Predictions (Test Set)</h3>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Sample</th>
+                            <th>Predicted Label</th>
+                            <th>Actual Label</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for i in range(results.predictions.y_pred_test|length) %}
+                        <tr>
+                            <td>{{ i + 1 }}</td>
+                            <td>{{ 'Positive' if results.predictions.y_pred_test[i] == 1 else 'Negative' }}</td>
+                            <td>{{ 'Positive' if results.predictions.y_test[i] == 1 else 'Negative' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="text-center">
+            <a href="{{ url_for('download_report') }}" class="btn btn-success">
+                <i class="fas fa-download"></i> Download Report
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+    <section id="about" class="bg-light py-5">
+        <div class="container-fluid">
+            <h2 class="text-center">About This Project</h2>
+            <p class="lead text-center">
+                This project analyzes customer reviews of Amazon Alexa products using a neural network to classify sentiments as positive or negative. The dataset contains 3150 reviews, and the model is trained using TF-IDF features. Explore the results above to see the model's performance!
+            </p>
+        </div>
+    </section>
+
+    <footer class="bg-dark text-white text-center py-3">
+        <div class="container-fluid">
+            <p>© 2025 Amazon Alexa Sentiment Analysis. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Add animation to results section when it comes into view
+        const resultsSection = document.getElementById('results');
+        if (resultsSection) {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = 1;
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            observer.observe(resultsSection);
+        }
+    </script>
+</body>
+</html>
